@@ -1,19 +1,19 @@
 # Blockchain based Hydrogen Credits
 
-A carbon credit trading platform leveraging React, Flask, and Solidity to promote transparency and accountability in CSR activities which are main disadvantages of traditional carbon trading. <br>
+A Hydrogen credit trading platform leveraging React, Flask, and Solidity to promote transparency and accountability in CSR activities which are main disadvantages of traditional Hydrogen trading. <br>
 
 **New Features:**
 - Updated smart contract deployment process with automated scripts
 - Improved blockchain integration with better error handling
 - Added comprehensive setup documentation
 
-**Idea:** Allow companies and corporations to reduce thier *net carbon* emissions by financially helping NGO that help reduce carbon emissions by buying smart contract based *Carbon Tokens* from them.
-- Reduce problems like double spending, ambiguous credit generation, curruption that plague the traditional carbon credits system
+**Idea:** Allow companies and corporations to reduce thier *net Hydrogen* emissions by financially helping NGO that help reduce Hydrogen emissions by buying smart contract based *Hydrogen Tokens* from them.
+- Reduce problems like double spending, ambiguous credit generation, curruption that plague the traditional Hydrogen credits system
 - Implemented a royality system which ensure that 10% of every transaction is given back to NGOs to unsure continues
-- A web app that simulates a blockchain carbon marketplace deployed on sepolia
+- A web app that simulates a blockchain Hydrogen marketplace deployed on sepolia
   
 ## Deployment
-The test web app deplyed [here](https://carbon-credit-sepolia.vercel.app/) <br>
+The test web app deplyed [here](https://Hydrogen-credit-sepolia.vercel.app/) <br>
 The contract deployed at address `0x5E5D1D1Dc0EDDB4f9e9E05FD872642Cd78F6eF51` on Sepolia view it on [EtherScan](https://sepolia.etherscan.io/address/0x5E5D1D1Dc0EDDB4f9e9E05FD872642Cd78F6eF51)
 
 To get started use test credentials:
@@ -27,25 +27,25 @@ Or ssee the demo [here](#demo).
 In India under section 135 of the Companies Act (2013), corporations must spend 2% of their average net profit from the preceding three years on Corporate Social Responsibility (CSR). 
 However, many companies resort to "greenwashing" rather than making genuine societal contributions. Simultaneously, NGOs face inadequate funding, limiting their ability to execute impactful projects.
 <br><br>
-A decentralized Carbon Credit system leveraging blockchain can address these challenges. 
+A decentralized Hydrogen Credit system leveraging blockchain can address these challenges. 
 It ensures timely funding for NGOs, promotes transparency and accountability in CSR activities, and aligns corporate efforts with genuine societal and environmental betterment.
 
 ### History
-Carbon trading originated in the 1990s as a market-based solution to combat climate change, starting with the Kyoto Protocol in 1997, which introduced emissions trading among countries.
-It later evolved into voluntary markets and cap-and-trade systems, allowing companies to trade carbon credits globally.
+Hydrogen trading originated in the 1990s as a market-based solution to combat climate change, starting with the Kyoto Protocol in 1997, which introduced emissions trading among countries.
+It later evolved into voluntary markets and cap-and-trade systems, allowing companies to trade Hydrogen credits globally.
 
 ## Workflow
-1. NGOs will register on the platform and create Carbon Credits based on thier projects which will then be put up for sale.
+1. NGOs will register on the platform and create Hydrogen Credits based on thier projects which will then be put up for sale.
 
 2. Companies or traders can buy these can buy these credits from the NGO and resell them further if they wish to.
-   - For every resell of a carbon credit, 10% of the transaction value is returned to the original creator of the credit (NGO).
+   - For every resell of a Hydrogen credit, 10% of the transaction value is returned to the original creator of the credit (NGO).
    - This mechanism ensures continuous funding support for the NGO's environmental projects.
 
 3. Credits must be available for finite amount of time to prevent double spending, once the project is completed the credits will be expired and can’t be sold further.
 
 4. Once the NGO completes the promised project, it can expire all credits associated with that project.
    - Once the NGO completes the promised project, it can expire all credits associated with that project.
-   - The web app generates a certificate verifying the credit purchase and acknowledging the person’s contribution to offsetting specific amount of carbon.
+   - The web app generates a certificate verifying the credit purchase and acknowledging the person’s contribution to offsetting specific amount of Hydrogen.
 
 
 <br>
