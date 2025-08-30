@@ -1,4 +1,4 @@
-# Blockchain based Carbon Credits
+# Blockchain based Hydrogen Credits
 
 A carbon credit trading platform leveraging React, Flask, and Solidity to promote transparency and accountability in CSR activities which are main disadvantages of traditional carbon trading. <br>
 
