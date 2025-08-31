@@ -40,14 +40,19 @@ const MyCreditsList = ({ credits, setCredits, isLoading }) => {
 
   // Professional features functions
   const filteredAndSortedCredits = useMemo(() => {
-    let filtered = credits || [];
+    // Ensure credits is always an array
+    if (!Array.isArray(credits)) {
+      return [];
+    }
+    
+    let filtered = [...credits]; // Create a copy to avoid mutating original
 
     // Search filter
     if (searchTerm) {
       filtered = filtered.filter(credit => 
-        credit.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        credit.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        credit.id.toLowerCase().includes(searchTerm.toLowerCase())
+        credit?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        credit?.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        credit?.id?.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
 
@@ -55,19 +60,19 @@ const MyCreditsList = ({ credits, setCredits, isLoading }) => {
     if (statusFilter !== 'all') {
       switch (statusFilter) {
         case 'pending':
-          filtered = filtered.filter(credit => credit.req_status === 1);
+          filtered = filtered.filter(credit => credit?.req_status === 1);
           break;
         case 'accepted':
-          filtered = filtered.filter(credit => credit.req_status === 2 && credit.score > 0);
+          filtered = filtered.filter(credit => credit?.req_status === 2 && credit?.score > 0);
           break;
         case 'rejected':
-          filtered = filtered.filter(credit => credit.req_status === 2 && credit.score <= 0);
+          filtered = filtered.filter(credit => credit?.req_status === 2 && credit?.score <= 0);
           break;
         case 'forSale':
-          filtered = filtered.filter(credit => credit.req_status === 3);
+          filtered = filtered.filter(credit => credit?.req_status === 3);
           break;
         case 'expired':
-          filtered = filtered.filter(credit => credit.is_expired);
+          filtered = filtered.filter(credit => credit?.is_expired);
           break;
         default:
           break;
@@ -82,7 +87,10 @@ const MyCreditsList = ({ credits, setCredits, isLoading }) => {
       const oneDayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
 
       filtered = filtered.filter(credit => {
+        if (!credit?.created_at) return false;
         const creditDate = new Date(credit.created_at);
+        if (isNaN(creditDate.getTime())) return false; // Check if date is valid
+        
         switch (dateFilter) {
           case 'today':
             return creditDate >= oneDayAgo;
@@ -96,29 +104,33 @@ const MyCreditsList = ({ credits, setCredits, isLoading }) => {
       });
     }
 
-    // Sorting
-    filtered.sort((a, b) => {
-      let aValue = a[sortBy];
-      let bValue = b[sortBy];
+    // Sorting - ensure filtered is still an array before sorting
+    if (Array.isArray(filtered) && filtered.length > 0) {
+      filtered.sort((a, b) => {
+        let aValue = a?.[sortBy];
+        let bValue = b?.[sortBy];
 
-      if (sortBy === 'created_at') {
-        aValue = new Date(aValue);
-        bValue = new Date(bValue);
-      }
+        if (sortBy === 'created_at') {
+          aValue = new Date(aValue);
+          bValue = new Date(bValue);
+          // Check if dates are valid
+          if (isNaN(aValue.getTime()) || isNaN(bValue.getTime())) return 0;
+        }
 
-      if (sortOrder === 'asc') {
-        return aValue > bValue ? 1 : -1;
-      } else {
-        return aValue < bValue ? 1 : -1;
-      }
-    });
+        if (sortOrder === 'asc') {
+          return aValue > bValue ? 1 : -1;
+        } else {
+          return aValue < bValue ? 1 : -1;
+        }
+      });
+    }
 
     return filtered;
   }, [credits, searchTerm, statusFilter, dateFilter, sortBy, sortOrder]);
 
   // Analytics calculations
   const analytics = useMemo(() => {
-    if (!credits || credits.length === 0) {
+    if (!Array.isArray(credits) || credits.length === 0) {
       return {
         total: 0,
         totalValue: 0,
@@ -133,14 +145,14 @@ const MyCreditsList = ({ credits, setCredits, isLoading }) => {
     }
 
     const total = credits.length;
-    const totalValue = credits.reduce((sum, credit) => sum + (credit.price * credit.amount), 0);
-    const pending = credits.filter(credit => credit.req_status === 1).length;
-    const accepted = credits.filter(credit => credit.req_status === 2 && credit.score > 0).length;
-    const rejected = credits.filter(credit => credit.req_status === 2 && credit.score <= 0).length;
-    const forSale = credits.filter(credit => credit.req_status === 3).length;
-    const expired = credits.filter(credit => credit.is_expired).length;
+    const totalValue = credits.reduce((sum, credit) => sum + ((credit?.price || 0) * (credit?.amount || 0)), 0);
+    const pending = credits.filter(credit => credit?.req_status === 1).length;
+    const accepted = credits.filter(credit => credit?.req_status === 2 && credit?.score > 0).length;
+    const rejected = credits.filter(credit => credit?.req_status === 2 && credit?.score <= 0).length;
+    const forSale = credits.filter(credit => credit?.req_status === 3).length;
+    const expired = credits.filter(credit => credit?.is_expired).length;
     const averagePrice = totalValue / total;
-    const totalAmount = credits.reduce((sum, credit) => sum + credit.amount, 0);
+    const totalAmount = credits.reduce((sum, credit) => sum + (credit?.amount || 0), 0);
 
     return {
       total,
@@ -157,18 +169,18 @@ const MyCreditsList = ({ credits, setCredits, isLoading }) => {
 
   // Export functionality
   const exportCredits = (format = 'csv') => {
-    const data = filteredAndSortedCredits.map(credit => ({
-      ID: credit.id,
-      Name: credit.name,
-      Description: credit.description,
-      Amount: credit.amount,
-      Price: credit.price,
-      Status: credit.req_status === 1 ? 'Pending' : 
-              credit.req_status === 2 ? (credit.score > 0 ? 'Accepted' : 'Rejected') :
-              credit.req_status === 3 ? 'For Sale' : 'Unknown',
-      Score: credit.score,
-      Created: credit.created_at,
-      Expired: credit.is_expired ? 'Yes' : 'No'
+    const data = (Array.isArray(filteredAndSortedCredits) ? filteredAndSortedCredits : []).map(credit => ({
+      ID: credit?.id || '',
+      Name: credit?.name || '',
+      Description: credit?.description || '',
+      Amount: credit?.amount || 0,
+      Price: credit?.price || 0,
+      Status: credit?.req_status === 1 ? 'Pending' : 
+              credit?.req_status === 2 ? (credit?.score > 0 ? 'Accepted' : 'Rejected') :
+              credit?.req_status === 3 ? 'For Sale' : 'Unknown',
+      Score: credit?.score || 0,
+      Created: credit?.created_at || '',
+      Expired: credit?.is_expired ? 'Yes' : 'No'
     }));
 
     if (data.length === 0) {
@@ -183,7 +195,7 @@ const MyCreditsList = ({ credits, setCredits, isLoading }) => {
     if (format === 'csv') {
       const csvContent = [
         Object.keys(data[0]).join(','),
-        ...data.map(row => Object.values(row).join(','))
+        ...(data && Array.isArray(data) ? data : []).map(row => Object.values(row).join(','))
       ].join('\n');
 
       const blob = new Blob([csvContent], { type: 'text/csv' });
@@ -198,14 +210,14 @@ const MyCreditsList = ({ credits, setCredits, isLoading }) => {
 
   // Categorize credits (now using filtered data)
   const categorizedCredits = useMemo(() => {
-    if (!filteredAndSortedCredits || filteredAndSortedCredits.length === 0) return {};
+    if (!Array.isArray(filteredAndSortedCredits) || filteredAndSortedCredits.length === 0) return {};
 
     return {
-      pending: filteredAndSortedCredits.filter(credit => credit.req_status === 1),
-      accepted: filteredAndSortedCredits.filter(credit => credit.req_status === 2 && credit.score > 0 && !credit.is_expired),
-      rejected: filteredAndSortedCredits.filter(credit => credit.req_status === 2 && credit.score <= 0),
-      forSale: filteredAndSortedCredits.filter(credit => credit.req_status === 3 && !credit.is_expired),
-      expired: filteredAndSortedCredits.filter(credit => credit.is_expired)
+      pending: filteredAndSortedCredits.filter(credit => credit?.req_status === 1),
+      accepted: filteredAndSortedCredits.filter(credit => credit?.req_status === 2 && credit?.score > 0 && !credit?.is_expired),
+      rejected: filteredAndSortedCredits.filter(credit => credit?.req_status === 2 && credit?.score <= 0),
+      forSale: filteredAndSortedCredits.filter(credit => credit?.req_status === 3 && !credit?.is_expired),
+      expired: filteredAndSortedCredits.filter(credit => credit?.is_expired)
     };
   }, [filteredAndSortedCredits]);
 
@@ -293,11 +305,12 @@ const MyCreditsList = ({ credits, setCredits, isLoading }) => {
         text: 'Credit expired successfully!',
       });
 
-      setCredits((prevCredits) =>
-        prevCredits.map((credit) =>
-          credit.id === creditId ? { ...credit, is_expired: true } : credit
-        )
-      );
+      setCredits((prevCredits) => {
+        if (!Array.isArray(prevCredits)) return [];
+        return prevCredits.map((credit) =>
+          credit?.id === creditId ? { ...credit, is_expired: true } : credit
+        );
+      });
     } catch (error) {
       if (error.response && error.response.status === 400) {
         Swal.fire({
@@ -318,7 +331,11 @@ const MyCreditsList = ({ credits, setCredits, isLoading }) => {
       console.log(`Put for sale called for credit ID: ${creditId}`);
 
       // Find the credit with the matching ID
-      const creditToSell = credits.find(credit => credit.id === creditId);
+      if (!Array.isArray(credits)) {
+        throw new Error('Credits data is not available');
+      }
+      
+      const creditToSell = credits.find(credit => credit?.id === creditId);
 
       if (!creditToSell) {
         throw new Error(`Credit with ID ${creditId} not found`);
@@ -358,10 +375,14 @@ const MyCreditsList = ({ credits, setCredits, isLoading }) => {
 
   // Render a single credit item
   const renderCreditItem = (credit) => {
+    if (!credit || typeof credit !== 'object') {
+      return null; // Skip rendering if credit is invalid
+    }
+    
     // Merge background color style with border style
     const listItemStyle = {
-      ...getStatusBorderStyle(credit.req_status, credit.score, credit.is_expired),
-      backgroundColor: credit.is_expired ? '#D4EDDA' : 'transparent'
+      ...getStatusBorderStyle(credit?.req_status, credit?.score, credit?.is_expired),
+      backgroundColor: credit?.is_expired ? '#D4EDDA' : 'transparent'
     };
 
     return (
@@ -372,12 +393,12 @@ const MyCreditsList = ({ credits, setCredits, isLoading }) => {
       >
         <div className="flex flex-1 items-center w-0">
           <span className="flex-1 ml-2 w-0 truncate">
-            Credit ID: {credit.id}: {credit.name} - Amount: {credit.amount || 'N/A'}, Price: {credit.price || 'N/A'} ETH
+            Credit ID: {credit?.id || 'N/A'}: {credit?.name || 'N/A'} - Amount: {credit?.amount || 'N/A'}, Price: {credit?.price || 'N/A'} ETH
           </span>
         </div>
 
         {/* Document view button always visible */}
-        {credit.secure_url && <button
+        {credit?.secure_url && <button
           type='button'
           onClick={() => window.open(credit.secure_url, '_blank')}
           className="py-2 px-2 mr-2 font-sans text-white bg-green-500 rounded hover:bg-green-400"
@@ -392,7 +413,7 @@ const MyCreditsList = ({ credits, setCredits, isLoading }) => {
               <div className="flex items-center">
                 <AlertTriangle className="mr-2 text-yellow-500" size={20} />
                 <span className="text-sm">
-                  Pending: {credit.auditor_left}/{credit.auditors_count} Auditors, Score: {credit.score}
+                  Score: {credit.score}
                 </span>
               </div>
             ) : credit.req_status === 2 ? (
@@ -479,7 +500,7 @@ const MyCreditsList = ({ credits, setCredits, isLoading }) => {
         />
         {expandedSections[sectionKey] && (
           <ul className="divide-y divide-gray-200">
-            {credits.map(credit => renderCreditItem(credit))}
+            {(Array.isArray(credits) ? credits : []).map(credit => renderCreditItem(credit))}
           </ul>
         )}
       </div>

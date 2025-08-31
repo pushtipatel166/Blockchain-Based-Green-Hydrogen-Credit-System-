@@ -35,14 +35,12 @@ def create_app():
         from .routes.auth_routes import auth_bp
         from .routes.NGO_routes import ngo_bp
         from .routes.buyer_routes import buyer_bp
-        from .routes.auditor_routes import auditor_bp
         from .routes.health_routes import health_bp
         
         # Register blueprints
         app.register_blueprint(auth_bp)
         app.register_blueprint(ngo_bp)
         app.register_blueprint(buyer_bp)
-        app.register_blueprint(auditor_bp)
         app.register_blueprint(health_bp)
         
         # Create database tables if they don't exist

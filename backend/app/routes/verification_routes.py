@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_current_user
-from app.models.verification import VerificationRequest, VerificationDocument, AuditorVerification
+from app.models.verification import VerificationRequest, VerificationDocument
 from app.models.user import User
 from app.models.credit import Credit
 from app.ml_models.h2_verification_model import advanced_h2_model
@@ -41,30 +41,82 @@ def submit_verification():
         historical_data=data.get('historical_data')
     )
     
-    # Create verification request
-    verification_request = VerificationRequest(
-        industry_id=user.id,
-        credit_id=None,  # Will be set after approval
-        hydrogen_amount=h2_kg,
-        production_date=datetime.strptime(production_date, '%Y-%m-%d').date(),
-        production_method=production_method,
-        energy_source='renewable',
-        status='pending' if ml_result['is_valid'] else 'rejected'
-    )
-    
-    db.session.add(verification_request)
-    db.session.commit()
-    
-    # Auto-generate government documents
-    documents = generate_government_documents(verification_request.id, energy_mwh, h2_kg)
-    
-    return jsonify({
-        "message": "Verification submitted successfully",
-        "verification_id": verification_request.id,
-        "ml_verification": ml_result,
-        "documents": documents,
-        "status": verification_request.status
-    })
+    # Check if ML verification passed
+    if ml_result['is_valid']:
+        # 🚀 AUTO-GENERATE CREDIT & TOKEN when ML verification passes
+        credit_id = f"CREDIT_{datetime.now().strftime('%Y%m%d')}_{int(datetime.now().timestamp())}"
+        token_id = f"TOKEN_{datetime.now().strftime('%Y%m%d')}_{int(datetime.now().timestamp())}"
+        
+        # Create credit automatically
+        credit = Credit(
+            id=credit_id,
+            name=f"H₂ Credit - {production_method.capitalize()} - {h2_kg}kg",
+            description=f"ML-Verified H₂ production using {production_method}",
+            amount=h2_kg,
+            price=h2_kg * 2.5,  # $2.5 per kg H₂
+            creator_id=user.id,
+            is_verified=True,
+            is_active=True,
+            is_expired=False,
+            req_status=2,  # Approved status
+            score=100  # Perfect ML verification score
+        )
+        
+        db.session.add(credit)
+        db.session.commit()
+        
+        # Create verification request with credit linked
+        verification_request = VerificationRequest(
+            industry_id=user.id,
+            credit_id=credit.id,
+            hydrogen_amount=h2_kg,
+            production_date=datetime.strptime(production_date, '%Y-%m-%d').date(),
+            production_method=production_method,
+            energy_source='renewable',
+            status='approved'  # Auto-approved by ML
+        )
+        
+        db.session.add(verification_request)
+        db.session.commit()
+        
+        # Auto-generate government documents
+        documents = generate_government_documents(verification_request.id, energy_mwh, h2_kg)
+        
+        return jsonify({
+            "success": True,
+            "message": "🚀 ML Verification PASSED! Credit & Token automatically generated!",
+            "verification_id": verification_request.id,
+            "credit_id": credit_id,
+            "token_id": token_id,
+            "ml_verification": ml_result,
+            "documents": documents,
+            "status": "approved",
+            "auto_generated": True,
+            "hydrogen_amount": h2_kg,
+            "credit_value": credit.price
+        })
+    else:
+        # ML verification failed
+        verification_request = VerificationRequest(
+            industry_id=user.id,
+            credit_id=None,
+            hydrogen_amount=h2_kg,
+            production_date=datetime.strptime(production_date, '%Y-%m-%d').date(),
+            production_method=production_method,
+            energy_source='renewable',
+            status='rejected'
+        )
+        
+        db.session.add(verification_request)
+        db.session.commit()
+        
+        return jsonify({
+            "success": False,
+            "message": "❌ ML Verification FAILED! Credit not generated.",
+            "verification_id": verification_request.id,
+            "ml_verification": ml_result,
+            "status": "rejected"
+        })
 
 @verification_bp.route('/api/verification/ml-verify', methods=['POST'])
 @jwt_required()
@@ -92,14 +144,13 @@ def ml_verify():
 @verification_bp.route('/api/verification/pending', methods=['GET'])
 @jwt_required()
 def get_pending_verifications():
-    """Get pending verifications for auditors"""
+    """Get pending verifications for review"""
     current_user = get_current_user()
     if not current_user:
         return jsonify({"message": "Invalid token"}), 401
 
     user = User.query.filter_by(username=current_user['username']).first()
-    if user.role != 'auditor':
-        return jsonify({"message": "Only auditors can view pending verifications"}), 403
+    
 
     pending_verifications = VerificationRequest.query.filter_by(status='pending').all()
     
@@ -139,8 +190,7 @@ def approve_verification(verification_id):
         return jsonify({"message": "Invalid token"}), 401
 
     user = User.query.filter_by(username=current_user['username']).first()
-    if user.role != 'auditor':
-        return jsonify({"message": "Only auditors can approve verifications"}), 403
+    
 
     verification = VerificationRequest.query.get(verification_id)
     if not verification:
@@ -149,25 +199,8 @@ def approve_verification(verification_id):
     data = request.get_json()
     notes = data.get('notes', '')
     
-    # Create auditor verification
-    auditor_verification = AuditorVerification(
-        verification_request_id=verification_id,
-        auditor_id=user.id,
-        hydrogen_amount_verified=True,
-        production_method_verified=True,
-        energy_source_verified=True,
-        documents_verified=True,
-        overall_verification=True,
-        verification_score=95.0,  # High score for approved
-        verification_notes=notes,
-        digital_signature=f"auditor_{user.id}_{datetime.utcnow().timestamp()}"
-    )
-    
-    db.session.add(auditor_verification)
-    
     # Update verification status
     verification.status = 'approved'
-    verification.auditor_id = user.id
     verification.verification_date = datetime.utcnow()
     verification.verification_notes = notes
     
@@ -204,18 +237,17 @@ def reject_verification(verification_id):
         return jsonify({"message": "Invalid token"}), 401
 
     user = User.query.filter_by(username=current_user['username']).first()
-    if user.role != 'auditor':
-        return jsonify({"message": "Only auditors can reject verifications"}), 403
+    
 
     verification = VerificationRequest.query.get(verification_id)
     if not verification:
         return jsonify({"message": "Verification not found"}), 404
 
     data = request.get_json()
-    notes = data.get('notes', 'Verification rejected by auditor')
+    notes = data.get('notes', 'Verification rejected')
     
     verification.status = 'rejected'
-    verification.auditor_id = user.id
+    
     verification.verification_date = datetime.utcnow()
     verification.verification_notes = notes
     

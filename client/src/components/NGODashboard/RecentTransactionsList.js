@@ -23,7 +23,7 @@ const RecentTransactionsList = ({ transactions, isLoading }) => {
               <LoadingCredit />
               <LoadingCredit />
             </>
-          ) : transactions.slice(-10).map((transaction) => (
+          ) : (transactions && Array.isArray(transactions) ? transactions.slice(-10) : []).map((transaction) => (
             <li key={transaction.id} className="flex justify-between items-center py-3 pr-4 pl-3 text-sm">
               <div className="flex flex-1 items-center w-0">
                 <span className="flex-1 ml-2 w-0 truncate">

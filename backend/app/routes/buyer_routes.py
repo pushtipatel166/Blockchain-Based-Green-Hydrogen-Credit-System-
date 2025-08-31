@@ -268,15 +268,7 @@ def get_credit_details(credit_id):
     try:
         credit = Credit.query.get_or_404(credit_id)
         user = User.query.get_or_404(credit.creator_id)
-        # Fetch usernames for auditors
-        auditors = credit.auditors or []
-        auditor_users = User.query.filter(User.id.in_(auditors)).all()
-        auditor_usernames = {user.id: user.username for user in auditor_users}
-        # Map auditor IDs to usernames, preserving order
-        auditor_list = [
-            {"id": auditor_id, "username": auditor_usernames.get(auditor_id, "Unknown")}
-            for auditor_id in auditors
-        ]
+
 
         return jsonify({
             "id": credit.id,
@@ -288,7 +280,7 @@ def get_credit_details(credit_id):
             "creator_id": credit.creator_id,
             "creator_name": user.username,
             "docu_url": credit.docu_url,
-            "auditors": auditor_list,  # Return list of {id, username}
+
             "req_status": credit.req_status
         })
     except Exception as e:
@@ -307,7 +299,7 @@ def get_portfolio_analytics():
     
     total_invested = 0
     current_value = 0
-            hydrogen_offset = 0
+    hydrogen_offset = 0
     credits_count = len(purchased_credits)
     
     for pc in purchased_credits:

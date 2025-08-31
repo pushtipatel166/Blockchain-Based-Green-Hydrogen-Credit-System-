@@ -59,13 +59,7 @@ const Navbar = ({ user, onLogout }) => {
                     <ShoppingBag className="w-4 h-4 mr-2 text-emerald-500" />
                     <span>Buyer</span>
                   </Link>
-                  <Link
-                    to="/auditor-signup"
-                    className="flex items-center text-sm text-gray-700 hover:bg-green-50 hover:text-emerald-700 py-2 px-3"
-                  >
-                    <UserCheck className="w-4 h-4 mr-2 text-emerald-500" />
-                    <span>Auditor</span>
-                  </Link>
+
                 </div>
               </div>
             </div>
@@ -100,15 +94,7 @@ const Navbar = ({ user, onLogout }) => {
                 </Link>
               )}
               
-              {user.role === 'auditor' && (
-                <Link
-                  to="/auditor-dashboard"
-                  className="flex items-center py-1.5 px-3 text-sm text-emerald-700 hover:text-emerald-900 hover:bg-green-50 rounded-md transition-colors duration-200"
-                >
-                  <UserCheck className="w-4 h-4 mr-1.5" />
-                  <span className="hidden sm:inline">Dashboard</span>
-                </Link>
-              )}
+
               
               <button
                 onClick={onLogout}

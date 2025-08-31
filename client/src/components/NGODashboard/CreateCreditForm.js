@@ -4,7 +4,7 @@ import { Loader2, Upload, Tag, Cloud, Currency, FileText, Bitcoin } from 'lucide
 import { FaEthereum } from "react-icons/fa6";
 import { useDropzone } from 'react-dropzone';
 import Swal from 'sweetalert2';
-import { createNGOCredit, getNGOCredits, checkAuditorsNumber } from '../../api/api';
+import { createNGOCredit, getNGOCredits } from '../../api/api';
 
 const CreateCreditForm = ({ setMyCredits }) => {
   const { generateCredit, getNextCreditId, requestAudit } = useContext(CC_Context);
@@ -97,8 +97,7 @@ const CreateCreditForm = ({ setMyCredits }) => {
 
     try {
       setPendingCr(true);
-      const checkAuditors = await checkAuditorsNumber(newCredit.amount);
-      console.log(checkAuditors?.data ?? checkAuditors);
+      
       
       // Temporary fix: Use a simple counter instead of blockchain call
       const newCreditId = Date.now(); // Use timestamp as temporary ID

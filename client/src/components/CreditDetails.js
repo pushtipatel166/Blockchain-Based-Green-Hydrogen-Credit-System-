@@ -85,7 +85,7 @@ const CreditDetails = () => {
 
   if (!credit && !dbCredit) return (
     <div className="container p-4 mx-auto text-center">
-      <div className="inline-block p-6 bg-gray-50 rounded-lg border border-gray-200">
+              <div className="inline-block p-6 bg-green-50 rounded-lg border border-green-200">
         <FileText className="mx-auto mb-4 w-12 h-12 text-gray-400" />
         <p className="text-lg text-gray-700">No credit found.</p>
       </div>
@@ -194,20 +194,7 @@ const CreditDetails = () => {
           )}
 
 
-          {/* Auditors */}
-          <div className="flex items-start">
-            <div className="p-2 mr-3 bg-emerald-50 rounded-full">
-              <Shield className="w-5 h-5 text-emerald-500" />
-            </div>
-            <div>
-              <p className="text-sm text-gray-500">Auditors</p>
-              <p className="font-medium">
-                {dbCredit?.auditors?.length > 0
-                  ? dbCredit.auditors.map(auditor => auditor.username).join(', ')
-                  : credit ? credit.numOfAuditors.toString() : 'None'}
-              </p>
-            </div>
-          </div>
+
 
           {/* Request Status */}
           <div className="flex items-start">

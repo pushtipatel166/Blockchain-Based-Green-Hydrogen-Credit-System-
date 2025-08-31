@@ -12,7 +12,7 @@ CORS(app)
 USERS = {
     "test_buyer": {"password": "sepolia", "role": "buyer"},
     "test_admin": {"password": "sepolia", "role": "NGO"},
-    "test_auditor": {"password": "sepolia", "role": "auditor"}
+
 }
 
 @app.route('/api/health', methods=['GET'])

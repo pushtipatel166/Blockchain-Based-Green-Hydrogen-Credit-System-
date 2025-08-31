@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useContext, useMemo } from 'react';
-import { getBuyerCredits, purchaseCredit, sellCreditApi, removeSaleCreditApi, getPurchasedCredits, generateCertificate, downloadCertificate, getPortfolioAnalytics, getMarketTrends, getRecommendations, getNotifications } from '../api/api';
+import { getBuyerCredits, purchaseCredit, sellCreditApi, removeSaleCreditApi, getPurchasedCredits, generateCertificate, downloadCertificate, getPortfolioAnalytics, getMarketTrends, getNotifications } from '../api/api';
 import { CC_Context } from "../context/SmartContractConnector.js";
 import { ethers } from "ethers";
-import { Eye, EyeOff, Loader2, File, Info, Download, ShoppingCart, XCircle, Tag, DollarSign, AlertCircle, TrendingUp, BarChart3, Users, Target, Zap, Star, Filter, Search, Bell, Share2, Calendar, TrendingDown, Award, Globe, Leaf, Coins, Wallet, PieChart, Activity, ArrowUpRight, ArrowDownRight, Sparkles, Crown, Trophy, Gift, Shield, Clock, CheckCircle, AlertTriangle, Heart, MessageCircle, Bookmark, Share, Eye as EyeIcon, BarChart, LineChart, PieChart as PieChartIcon, Target as TargetIcon, Zap as ZapIcon, Star as StarIcon, Filter as FilterIcon, Search as SearchIcon, Bell as BellIcon, Share2 as Share2Icon, Calendar as CalendarIcon, TrendingDown as TrendingDownIcon, Award as AwardIcon, Globe as GlobeIcon, Leaf as LeafIcon, Coins as CoinsIcon, Wallet as WalletIcon, PieChart as PieChartIcon2, Activity as ActivityIcon, ArrowUpRight as ArrowUpRightIcon, ArrowDownRight as ArrowDownRightIcon, Sparkles as SparklesIcon, Crown as CrownIcon, Trophy as TrophyIcon, Gift as GiftIcon, Shield as ShieldIcon, Clock as ClockIcon, CheckCircle as CheckCircleIcon, AlertTriangle as AlertTriangleIcon, Heart as HeartIcon, MessageCircle as MessageCircleIcon, Bookmark as BookmarkIcon, Share as ShareIcon } from 'lucide-react';
+import { Eye, EyeOff, Loader2, File, Info, Download, ShoppingCart, XCircle, Tag, DollarSign, AlertCircle, TrendingUp, BarChart3, Users, Target, Zap, Star, Filter, Search, Bell, Share2, Calendar, TrendingDown, Award, Globe, Leaf, Coins, Wallet, PieChart, Activity, ArrowUpRight, ArrowDownRight, Crown, Trophy, Gift, Shield, Clock, CheckCircle, AlertTriangle, Heart, MessageCircle, Bookmark, Share, Eye as EyeIcon, BarChart, LineChart, PieChart as PieChartIcon, Target as TargetIcon, Zap as ZapIcon, Star as StarIcon, Filter as FilterIcon, Search as SearchIcon, Bell as BellIcon, Share2 as Share2Icon, Calendar as CalendarIcon, TrendingDown as TrendingDownIcon, Award as AwardIcon, Globe as GlobeIcon, Leaf as LeafIcon, Coins as CoinsIcon, Wallet as WalletIcon, PieChart as PieChartIcon2, Activity as ActivityIcon, ArrowUpRight as ArrowUpRightIcon, ArrowDownRight as ArrowDownRightIcon, Crown as CrownIcon, Trophy as TrophyIcon, Gift as GiftIcon, Shield as ShieldIcon, Clock as ClockIcon, CheckCircle as CheckCircleIcon, AlertTriangle as AlertTriangleIcon, Heart as HeartIcon, MessageCircle as MessageCircleIcon, Bookmark as BookmarkIcon, Share as ShareIcon } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import Swal from 'sweetalert2';
+import MetaMaskBuyer from './MetaMaskBuyer';
 
 // Modular Details Button Component
 const DetailsButton = ({ creditId }) => {
@@ -27,10 +28,10 @@ const DetailsButton = ({ creditId }) => {
 const LoadingCredit = () => (
   <li className="flex justify-between items-center py-2 px-4 text-sm animate-pulse">
     <div className="flex-1">
-      <div className="w-3/4 h-4 bg-gray-200 rounded"></div>
+      <div className="w-3/4 h-4 bg-green-200 rounded"></div>
     </div>
     <div className="w-16">
-      <div className="h-8 bg-gray-200 rounded"></div>
+      <div className="h-8 bg-green-200 rounded"></div>
     </div>
   </li>
 );
@@ -53,12 +54,13 @@ const BuyerDashboard = () => {
   const [portfolioValue, setPortfolioValue] = useState(0);
   const [hydrogenImpact, setHydrogenImpact] = useState(0);
   const [marketTrends, setMarketTrends] = useState([]);
-  const [recommendations, setRecommendations] = useState([]);
   const [notifications, setNotifications] = useState([]);
   const [favorites, setFavorites] = useState([]);
   const [viewMode, setViewMode] = useState('grid');
   const [selectedCredits, setSelectedCredits] = useState([]);
   const [showBulkActions, setShowBulkActions] = useState(false);
+  const [showPurchaseModal, setShowPurchaseModal] = useState(false);
+  const [selectedCreditForPurchase, setSelectedCreditForPurchase] = useState(null);
   const [performanceData, setPerformanceData] = useState({
     totalInvested: 0,
     currentValue: 0,
@@ -84,16 +86,15 @@ const BuyerDashboard = () => {
   const fetchAllCredits = async () => {
     try {
       setIsLoading(true);
-      const [availableResponse, purchasedResponse, analyticsResponse, trendsResponse, recommendationsResponse, notificationsResponse] = await Promise.all([
+      const [availableResponse, purchasedResponse, analyticsResponse, trendsResponse, notificationsResponse] = await Promise.all([
         getBuyerCredits(),
         getPurchasedCredits(),
         getPortfolioAnalytics(),
         getMarketTrends(),
-        getRecommendations(),
         getNotifications()
       ]);
 
-      const creditsWithSalePrice = purchasedResponse.data.map(credit => ({
+      const creditsWithSalePrice = (purchasedResponse.data && Array.isArray(purchasedResponse.data) ? purchasedResponse.data : []).map(credit => ({
         ...credit,
         salePrice: '',
         isFavorite: favorites.includes(credit.id),
@@ -105,13 +106,12 @@ const BuyerDashboard = () => {
       }));
 
       setPurchasedCredits(creditsWithSalePrice);
-      setAvailableCredits(availableResponse.data);
+      setAvailableCredits(availableResponse.data || []);
       
       // 🚀 SET REAL DATA FROM API
-      setPerformanceData(analyticsResponse.data);
-      setMarketTrends(trendsResponse.data);
-      setRecommendations(recommendationsResponse.data);
-      setNotifications(notificationsResponse.data);
+      setPerformanceData(analyticsResponse.data || {});
+      setMarketTrends(trendsResponse.data || []);
+      setNotifications(notificationsResponse.data || []);
       
     } catch (error) {
       console.error('Failed to fetch credits:', error?.message);
@@ -206,6 +206,26 @@ const BuyerDashboard = () => {
         credit.id === creditId ? { ...credit, salePrice: price } : credit
       )
     );
+  };
+
+  const handleShowPurchaseModal = (credit) => {
+    setSelectedCreditForPurchase(credit);
+    setShowPurchaseModal(true);
+  };
+
+  const handleClosePurchaseModal = () => {
+    setShowPurchaseModal(false);
+    setSelectedCreditForPurchase(null);
+  };
+
+  const handlePurchaseSuccess = () => {
+    handleClosePurchaseModal();
+    fetchAllCredits(); // Refresh the credits list
+    Swal.fire({
+      icon: 'success',
+      title: 'Purchase Successful!',
+      text: 'The credit has been added to your portfolio.',
+    });
   };
 
   const confirmSale = async (creditId) => {
@@ -311,7 +331,7 @@ const BuyerDashboard = () => {
   const handleSharePortfolio = () => {
     const shareData = {
               title: 'My Hydrogen Credit Portfolio',
-        text: `Check out my hydrogen credit portfolio! I've produced ${performanceData.hydrogenOffset.toFixed(2)} kg of H₂!`,
+                        text: `Check out my hydrogen credit portfolio! I've produced ${(performanceData.hydrogenOffset || 0).toFixed(2)} kg of H₂!`,
       url: window.location.href
     };
     
@@ -379,10 +399,10 @@ const BuyerDashboard = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-green-100 text-sm">Portfolio Value</p>
-                <p className="text-2xl font-bold">${performanceData.currentValue.toFixed(2)}</p>
-                <p className={`text-sm ${performanceData.profitLoss >= 0 ? 'text-green-200' : 'text-green-300'}`}>
-                  {performanceData.profitLoss >= 0 ? '+' : ''}{performanceData.profitLossPercentage.toFixed(2)}%
-                </p>
+                <p className="text-2xl font-bold">${(performanceData.currentValue || 0).toFixed(2)}</p>
+                                  <p className={`text-sm ${(performanceData.profitLoss || 0) >= 0 ? 'text-green-200' : 'text-green-300'}`}>
+                    {(performanceData.profitLoss || 0) >= 0 ? '+' : ''}{(performanceData.profitLossPercentage || 0).toFixed(2)}%
+                  </p>
               </div>
               <TrendingUp className="w-8 h-8 text-emerald-200" />
             </div>
@@ -392,7 +412,7 @@ const BuyerDashboard = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-green-100 text-sm">Green Hydrogen</p>
-                <p className="text-2xl font-bold">{performanceData.hydrogenOffset.toFixed(1)} kg</p>
+                <p className="text-2xl font-bold">{(performanceData.hydrogenOffset || 0).toFixed(1)} kg</p>
                 <p className="text-green-200 text-sm">H₂ produced</p>
               </div>
                               <Leaf className="w-8 h-8 text-green-200" />
@@ -414,7 +434,7 @@ const BuyerDashboard = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-green-100 text-sm">Total Invested</p>
-                <p className="text-2xl font-bold">${performanceData.totalInvested.toFixed(2)}</p>
+                <p className="text-2xl font-bold">${(performanceData.totalInvested || 0).toFixed(2)}</p>
                 <p className="text-green-200 text-sm">ETH</p>
               </div>
                               <Wallet className="w-8 h-8 text-green-200" />
@@ -430,7 +450,7 @@ const BuyerDashboard = () => {
                 { id: 'portfolio', label: 'H₂ Portfolio', icon: PieChart },
                 { id: 'marketplace', label: 'H₂ Marketplace', icon: ShoppingCart },
                 { id: 'analytics', label: 'H₂ Analytics', icon: BarChart3 },
-                { id: 'recommendations', label: 'AI Recommendations', icon: Sparkles },
+        
                 { id: 'notifications', label: 'Notifications', icon: Bell }
               ].map(tab => (
                 <button
@@ -524,7 +544,7 @@ const BuyerDashboard = () => {
                 {/* 🚀 ENHANCED PORTFOLIO GRID */}
                 {viewMode === 'grid' ? (
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {filteredAndSortedCredits.map((credit) => (
+                    {(filteredAndSortedCredits && Array.isArray(filteredAndSortedCredits) ? filteredAndSortedCredits : []).map((credit) => (
                       <div key={credit.id} className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-lg transition-shadow">
                         <div className="p-6">
                           <div className="flex items-start justify-between mb-4">
@@ -577,7 +597,7 @@ const BuyerDashboard = () => {
                             </div>
                             <span className={`px-2 py-1 text-xs rounded-full ${
                               credit.is_expired ? 'bg-green-100 text-green-800' : 
-                              credit.is_active ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+                              credit.is_active ? 'bg-green-100 text-green-800' : 'bg-green-100 text-green-800'
                             }`}>
                               {credit.is_expired ? 'Expired' : credit.is_active ? 'For Sale' : 'Held'}
                             </span>
@@ -588,7 +608,7 @@ const BuyerDashboard = () => {
                             {credit.secure_url && (
                               <button
                                 onClick={() => window.open(credit.secure_url, '_blank')}
-                                className="flex-1 px-3 py-2 text-sm bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors flex items-center justify-center"
+                                className="flex-1 px-3 py-2 text-sm bg-green-100 text-green-700 rounded-lg hover:bg-green-200 transition-colors flex items-center justify-center"
                               >
                                 <File className="w-4 h-4 mr-1" />
                                 View Docs
@@ -626,7 +646,7 @@ const BuyerDashboard = () => {
                   </div>
                 ) : (
                   <ul className="space-y-2">
-                    {filteredAndSortedCredits.map((credit) => (
+                    {(filteredAndSortedCredits && Array.isArray(filteredAndSortedCredits) ? filteredAndSortedCredits : []).map((credit) => (
                       <li key={credit.id} className="flex justify-between items-center py-3 px-4 bg-white rounded-lg border border-gray-100 hover:shadow-sm transition-shadow">
                         <div className="flex items-center space-x-4">
                           <Tag className="w-5 h-5 text-emerald-500" />
@@ -638,10 +658,10 @@ const BuyerDashboard = () => {
                             <span className="font-medium">{credit.amount} tons</span> • <span>{credit.price} ETH</span>
                           </div>
                           <div className={`flex items-center text-sm ${
-                            credit.performance >= 0 ? 'text-green-600' : 'text-green-400'
+                            (credit.performance || 0) >= 0 ? 'text-green-600' : 'text-green-400'
                           }`}>
-                            {credit.performance >= 0 ? '+' : ''}{credit.performance?.toFixed(2) || 0}%
-                            {credit.performance >= 0 ? <ArrowUpRight className="w-3 h-3 ml-1" /> : <ArrowDownRight className="w-3 h-3 ml-1" />}
+                            {(credit.performance || 0) >= 0 ? '+' : ''}{(credit.performance || 0).toFixed(2)}%
+                            {(credit.performance || 0) >= 0 ? <ArrowUpRight className="w-3 h-3 ml-1" /> : <ArrowDownRight className="w-3 h-3 ml-1" />}
                           </div>
                         </div>
                         <div className="flex items-center space-x-2">
@@ -755,7 +775,7 @@ const BuyerDashboard = () => {
                         <LoadingCredit />
                         <LoadingCredit />
                       </>
-                    ) : availableCredits.map((credit) => (
+                    ) : (availableCredits && Array.isArray(availableCredits) ? availableCredits : []).map((credit) => (
                       <div key={credit.id} className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-lg transition-shadow">
                         <div className="p-6">
                           <div className="flex items-start justify-between mb-4">
@@ -778,16 +798,28 @@ const BuyerDashboard = () => {
                           <div className="space-y-3 mb-4">
                             <div className="flex justify-between">
                               <span className="text-sm text-gray-600">Amount:</span>
-                              <span className="text-sm font-medium">{credit.amount} tons</span>
+                              <span className="text-sm font-medium">{credit.amount} kg</span>
                             </div>
                             <div className="flex justify-between">
                               <span className="text-sm text-gray-600">Price:</span>
-                              <span className="text-sm font-medium">{credit.price} ETH</span>
+                              <span className="text-sm font-medium">{credit.price} ETH/kg</span>
                             </div>
                             <div className="flex justify-between">
-                              <span className="text-sm text-gray-600">H₂ Production:</span>
-                              <span className="text-sm font-medium text-green-600">{credit.amount * 0.5} kg H₂</span>
+                              <span className="text-sm text-gray-600">Total Value:</span>
+                              <span className="text-sm font-medium text-green-600">{(credit.amount * credit.price).toFixed(2)} ETH</span>
                             </div>
+                            {credit.production_method && (
+                              <div className="flex justify-between">
+                                <span className="text-sm text-gray-600">Method:</span>
+                                <span className="text-sm font-medium text-blue-600">{credit.production_method}</span>
+                              </div>
+                            )}
+                            {credit.verification_score && (
+                              <div className="flex justify-between">
+                                <span className="text-sm text-gray-600">Verification:</span>
+                                <span className="text-sm font-medium text-purple-600">{(credit.verification_score * 100).toFixed(0)}%</span>
+                              </div>
+                            )}
                           </div>
                           
                           <div className="flex space-x-2">
@@ -802,25 +834,12 @@ const BuyerDashboard = () => {
                               </button>
                             )}
                             <button
-                              onClick={() => handleBuyCredit(credit.id)}
-                              disabled={credit.amount <= 0 || pendingTx === credit.id}
-                              className={`flex-1 px-3 py-2 text-sm font-medium rounded-lg flex items-center justify-center transition-colors ${
-                                credit.amount > 0
-                                  ? 'bg-emerald-500 text-white hover:bg-emerald-600'
-                                  : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                              }`}
+                              onClick={() => handleShowPurchaseModal(credit)}
+                              disabled={credit.amount <= 0}
+                              className="flex-1 px-3 py-2 text-sm font-medium bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center"
                             >
-                              {pendingTx === credit.id ? (
-                                <>
-                                  <Loader2 className="w-4 h-4 animate-spin mr-1" />
-                                  Buying...
-                                </>
-                              ) : (
-                                <>
-                                  <ShoppingCart className="w-4 h-4 mr-1" />
-                                  {credit.amount > 0 ? 'Buy Now' : 'Out of Stock'}
-                                </>
-                              )}
+                              <Wallet className="w-4 h-4 mr-1" />
+                              Buy with MetaMask
                             </button>
                           </div>
                         </div>
@@ -840,22 +859,22 @@ const BuyerDashboard = () => {
                     <div className="space-y-4">
                       <div className="flex justify-between items-center">
                         <span className="text-gray-600">Total Invested</span>
-                        <span className="font-semibold">${performanceData.totalInvested.toFixed(2)}</span>
+                        <span className="font-semibold">${(performanceData.totalInvested || 0).toFixed(2)}</span>
                       </div>
                       <div className="flex justify-between items-center">
                         <span className="text-gray-600">Current Value</span>
-                        <span className="font-semibold">${performanceData.currentValue.toFixed(2)}</span>
+                        <span className="font-semibold">${(performanceData.currentValue || 0).toFixed(2)}</span>
                       </div>
                       <div className="flex justify-between items-center">
                         <span className="text-gray-600">Profit/Loss</span>
-                        <span className={`font-semibold ${performanceData.profitLoss >= 0 ? 'text-green-600' : 'text-green-400'}`}>
-                          {performanceData.profitLoss >= 0 ? '+' : ''}${performanceData.profitLoss.toFixed(2)}
+                        <span className={`font-semibold ${(performanceData.profitLoss || 0) >= 0 ? 'text-green-600' : 'text-green-400'}`}>
+                          {(performanceData.profitLoss || 0) >= 0 ? '+' : ''}${(performanceData.profitLoss || 0).toFixed(2)}
                         </span>
                       </div>
                       <div className="flex justify-between items-center">
                         <span className="text-gray-600">ROI</span>
-                        <span className={`font-semibold ${performanceData.profitLossPercentage >= 0 ? 'text-green-600' : 'text-green-400'}`}>
-                          {performanceData.profitLossPercentage >= 0 ? '+' : ''}{performanceData.profitLossPercentage.toFixed(2)}%
+                        <span className={`font-semibold ${(performanceData.profitLossPercentage || 0) >= 0 ? 'text-green-600' : 'text-green-400'}`}>
+                          {(performanceData.profitLossPercentage || 0) >= 0 ? '+' : ''}{(performanceData.profitLossPercentage || 0).toFixed(2)}%
                         </span>
                       </div>
                     </div>
@@ -864,10 +883,10 @@ const BuyerDashboard = () => {
                   <div className="bg-white rounded-xl p-6 shadow-sm">
                     <h3 className="text-lg font-semibold text-gray-800 mb-4">Green Hydrogen Impact</h3>
                     <div className="text-center">
-                      <div className="text-4xl font-bold text-green-600 mb-2">{performanceData.hydrogenOffset.toFixed(1)}</div>
+                      <div className="text-4xl font-bold text-green-600 mb-2">{(performanceData.hydrogenOffset || 0).toFixed(1)}</div>
                       <div className="text-gray-600">kg of H₂ produced</div>
                       <div className="mt-4 text-sm text-gray-500">
-                        Equivalent to {Math.round(performanceData.hydrogenOffset * 0.5)} kg CO₂ avoided
+                        Equivalent to {Math.round((performanceData.hydrogenOffset || 0) * 0.5)} kg CO₂ avoided
                       </div>
                     </div>
                   </div>
@@ -876,7 +895,7 @@ const BuyerDashboard = () => {
                 <div className="bg-white rounded-xl p-6 shadow-sm">
                   <h3 className="text-lg font-semibold text-gray-800 mb-4">H₂ Market Trends</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                    {marketTrends.map((trend, index) => (
+                    {(marketTrends && Array.isArray(marketTrends) ? marketTrends : []).map((trend, index) => (
                       <div key={index} className="p-4 border border-gray-200 rounded-lg">
                         <div className="flex items-center justify-between mb-2">
                           <span className="font-medium text-gray-800">{trend.name}</span>
@@ -895,69 +914,7 @@ const BuyerDashboard = () => {
               </div>
             )}
 
-            {/* 🚀 AI RECOMMENDATIONS TAB CONTENT */}
-            {activeTab === 'recommendations' && (
-              <div>
-                <div className="mb-6">
-                  <h4 className="text-lg font-medium text-gray-700 mb-4">AI-Powered Recommendations</h4>
-                  <p className="text-gray-600 mb-6">Based on your portfolio and market trends, here are credits we think you'll love:</p>
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {recommendations.map((credit, index) => (
-                      <div key={index} className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-lg transition-shadow">
-                        <div className="p-6">
-                          <div className="flex items-start justify-between mb-4">
-                            <div className="flex-1">
-                              <h3 className="text-lg font-semibold text-gray-800 mb-1">{credit.name}</h3>
-                              <p className="text-sm text-gray-500">by {credit.creator?.username || 'Unknown'}</p>
-                            </div>
-                            <div className="bg-gradient-to-r from-green-500 to-emerald-500 text-white px-3 py-1 rounded-full text-sm font-medium">
-                              {credit.score.toFixed(0)}% Match
-                            </div>
-                          </div>
-                          
-                          <div className="space-y-3 mb-4">
-                            <div className="flex justify-between">
-                              <span className="text-sm text-gray-600">Amount:</span>
-                              <span className="text-sm font-medium">{credit.amount} tons</span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span className="text-sm text-gray-600">Price:</span>
-                              <span className="text-sm font-medium">{credit.price} ETH</span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span className="text-sm text-gray-600">Why Recommended:</span>
-                              <span className="text-sm font-medium text-green-600">{credit.reason}</span>
-                            </div>
-                          </div>
-                          
-                          <div className="flex space-x-2">
-                            <DetailsButton creditId={credit.id} />
-                            <button
-                              onClick={() => handleBuyCredit(credit.id)}
-                              disabled={credit.amount <= 0 || pendingTx === credit.id}
-                              className="flex-1 px-3 py-2 text-sm font-medium bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-lg hover:from-green-600 hover:to-emerald-600 transition-colors flex items-center justify-center"
-                            >
-                              {pendingTx === credit.id ? (
-                                <>
-                                  <Loader2 className="w-4 h-4 animate-spin mr-1" />
-                                  Buying...
-                                </>
-                              ) : (
-                                <>
-                                  <Sparkles className="w-4 h-4 mr-1" />
-                                  Buy Recommended
-                                </>
-                              )}
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            )}
+
 
             {/* 🚀 NOTIFICATIONS TAB CONTENT */}
             {activeTab === 'notifications' && (
@@ -966,7 +923,7 @@ const BuyerDashboard = () => {
                   <h4 className="text-lg font-medium text-gray-700 mb-4">Smart Notifications</h4>
                   
                   <div className="space-y-4">
-                    {notifications.map((notification) => (
+                    {(notifications && Array.isArray(notifications) ? notifications : []).map((notification) => (
                       <div key={notification.id} className={`p-4 rounded-lg border-l-4 ${
                         notification.type === 'success' ? 'bg-green-50 border-green-400' :
                         notification.type === 'warning' ? 'bg-green-100 border-green-300' :
@@ -1018,6 +975,29 @@ const BuyerDashboard = () => {
                   className="p-4 border border-gray-200 rounded-md"
                   dangerouslySetInnerHTML={{ __html: certificateData.certificate_html }}
                 />
+              </div>
+            )}
+
+            {/* MetaMask Purchase Modal */}
+            {showPurchaseModal && selectedCreditForPurchase && (
+              <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                <div className="bg-white rounded-lg max-w-md w-full max-h-[90vh] overflow-y-auto">
+                  <div className="flex justify-between items-center p-6 border-b border-gray-200">
+                    <h3 className="text-lg font-semibold text-gray-900">Purchase Hydrogen Credit</h3>
+                    <button
+                      onClick={handleClosePurchaseModal}
+                      className="text-gray-400 hover:text-gray-600 focus:outline-none"
+                    >
+                      <XCircle size={20} />
+                    </button>
+                  </div>
+                  <div className="p-6">
+                    <MetaMaskBuyer 
+                      credit={selectedCreditForPurchase}
+                      onPurchaseSuccess={handlePurchaseSuccess}
+                    />
+                  </div>
+                </div>
               </div>
             )}
           </div>

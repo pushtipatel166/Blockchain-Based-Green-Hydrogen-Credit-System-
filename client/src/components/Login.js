@@ -41,9 +41,7 @@ const Login = ({ onLogin }) => {
       // Redirect based on role
       const dashboardPath = userRole === 'NGO' 
         ? '/NGO-dashboard' 
-        : userRole === 'buyer' 
-          ? '/buyer-dashboard' 
-          : '/auditor-dashboard';
+        : '/buyer-dashboard';
           
       console.log(`Redirecting to ${dashboardPath}`);
       navigate(dashboardPath);
@@ -73,123 +71,84 @@ const Login = ({ onLogin }) => {
     <>
       <div className="flex justify-center items-center py-12 px-4 w-full min-h-screen bg-gradient-to-br from-emerald-100 to-blue-200">
         {status && (
-
           <div className="flex fixed top-20 left-1/2 items-center py-2 px-4 text-white bg-red-500 rounded-lg shadow-lg transition-transform duration-300 transform -translate-x-1/2 animate-slideIn">
-
             <span>{status}</span>
-          </div>
-        )}
-
-        {showTestPrompt && (
-          <div className="flex fixed top-14 left-1/2 gap-4 items-center p-4 bg-white rounded-lg shadow-lg transform -translate-x-1/2">
-            <span>Login as:</span>
-            <button
-              className="py-1 px-3 text-white bg-cyan-800 rounded-md"
-              onClick={() => {
-                setFormData({ username: "test_buyer", password: "123456", role: "buyer" });
-                setShowTestPrompt(false);
-              }}
-            >
-              Test Buyer
-            </button>
-            <button
-              className="py-1 px-3 text-white bg-emerald-600 rounded-md"
-              onClick={() => {
-                setFormData({ username: "test_ngo", password: "123456", role: "NGO" });
-                setShowTestPrompt(false);
-              }}
-            >
-              Test NGO
-            </button>
-            <button
-              className="py-1 px-3 text-white bg-purple-600 rounded-md"
-              onClick={() => {
-                setFormData({ username: "test_auditor", password: "123456", role: "auditor" });
-                setShowTestPrompt(false);
-              }}
-            >
-              Test Auditor
-            </button>
           </div>
         )}
 
         <div className="w-full max-w-md rounded-xl shadow-xl bg-white/80 backdrop-blur-sm">
           <div className="p-8 rounded-xl shadow-lg bg-emerald-50/90">
-            <div className="mb-1 text-sm font-semibold tracking-wide text-emerald-700 uppercase">Welcome back</div>
-            <h2 className="block mt-1 text-2xl font-medium leading-tight text-emerald-800">Login to your account</h2>
-            <form onSubmit={handleSubmit} className="mt-6 space-y-6">
-              <div>
-                <label className="block mb-2 text-sm font-medium text-emerald-700" htmlFor="username">
-                  Username
-                </label>
-                <input
-                  className="py-2 px-3 w-full rounded-lg border border-emerald-300 focus:ring-2 focus:ring-emerald-500 focus:outline-none bg-emerald-100/50"
-                  id="username"
-                  type="text"
-                  name="username"
-                  value={formData.username}
-                  onChange={handleChange}
-                  required
-                />
-              </div>
-              <div>
-                <label className="block mb-2 text-sm font-medium text-emerald-700" htmlFor="password">
-                  Password
-                </label>
-                <div className="relative">
-                  <input
-                    className="py-2 px-3 w-full rounded-lg border border-emerald-300 focus:ring-2 focus:ring-emerald-500 focus:outline-none bg-emerald-100/50"
-                    id="password"
-                    type={showPassword ? 'text' : 'password'}
-                    name="password"
-                    value={formData.password}
-                    onChange={handleChange}
-                    required
-                  />
-                  <button
-                    type="button"
-                    className="flex absolute inset-y-0 right-3 items-center text-emerald-600"
-                    onClick={() => setShowPassword((prev) => !prev)}
-                  >
-                    {showPassword ? 'Hide' : 'Show'}
-                  </button>
-                </div>
-              </div>
-              <div>
-                <label className="block mb-2 text-sm font-medium text-emerald-700" htmlFor="role">
-                  Role
-                </label>
-                <select
-                  className="py-2 px-3 w-full rounded-lg border border-emerald-300 focus:ring-2 focus:ring-emerald-500 focus:outline-none bg-emerald-100/50"
-                  id="role"
-                  name="role"
-                  value={formData.role}
-                  onChange={handleChange}
-                >
-                  <option value="buyer">Buyer</option>
-                  <option value="NGO">NGO</option>
-                  <option value="auditor">Auditor</option>
-                </select>
-              </div>
-              {/* <div> */}
-              {/*   <Turnstile */}
-              {/*     options={{ */}
-              {/*       theme: 'light', */}
-              {/*     }} */}
-              {/*     siteKey={SITE_KEY} */}
-              {/*     onError={() => alert('CAPTCHA failed Try again')} */}
-              {/*     onSuccess={(token) => setCaptchaToken(token)} */}
-              {/*   /> */}
-              {/* </div> */}
-              <div>
-                <button
-                  className="py-2 px-4 w-full font-semibold text-white bg-emerald-600 rounded-lg transition-colors duration-300 hover:bg-emerald-700"
-                  type="submit"
-                >
-                  {loadStatus ? "Loading..." : "Log In"}
-                </button>
-              </div>
-            </form>
+            <div className="text-center mb-8">
+              <h2 className="text-2xl font-bold text-emerald-800 mb-2">WELCOME BACK</h2>
+              <p className="text-emerald-600">Login to your account</p>
+            </div>
+
+            {/* Simple Direct Login Buttons */}
+            <div className="space-y-4">
+              <button
+                onClick={async () => {
+                  try {
+                    setLoadStatus(true);
+                    const response = await fetch('http://localhost:5000/api/login', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ username: "test_admin", password: "sepolia", role: "NGO" })
+                    });
+                    const data = await response.json();
+                    if (response.ok) {
+                      localStorage.setItem('token', data.access_token);
+                      onLogin({ username: "test_admin", role: "NGO", id: "test" });
+                      navigate('/ngo-dashboard');
+                    } else {
+                      setStatus("Login failed: " + (data.message || "Unknown error"));
+                    }
+                  } catch (error) {
+                    setStatus("Network error: " + error.message);
+                  } finally {
+                    setLoadStatus(false);
+                  }
+                }}
+                disabled={loadStatus}
+                className="w-full py-3 px-4 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 disabled:opacity-50"
+              >
+                {loadStatus ? "Logging in..." : "Login as NGO (test_admin)"}
+              </button>
+
+              <button
+                onClick={async () => {
+                  try {
+                    setLoadStatus(true);
+                    const response = await fetch('http://localhost:5000/api/login', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ username: "test_buyer", password: "sepolia", role: "buyer" })
+                    });
+                    const data = await response.json();
+                    if (response.ok) {
+                      localStorage.setItem('token', data.access_token);
+                      onLogin({ username: "test_buyer", role: "buyer", id: "test" });
+                      navigate('/buyer-dashboard');
+                    } else {
+                      setStatus("Login failed: " + (data.message || "Unknown error"));
+                    }
+                  } catch (error) {
+                    setStatus("Network error: " + error.message);
+                  } finally {
+                    setLoadStatus(false);
+                  }
+                }}
+                disabled={loadStatus}
+                className="w-full py-3 px-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50"
+              >
+                {loadStatus ? "Logging in..." : "Login as Buyer (test_buyer)"}
+              </button>
+            </div>
+
+            <div className="mt-6 text-center">
+              <p className="text-sm text-emerald-600">
+                Test credentials are pre-configured
+              </p>
+            </div>
           </div>
         </div>
       </div>

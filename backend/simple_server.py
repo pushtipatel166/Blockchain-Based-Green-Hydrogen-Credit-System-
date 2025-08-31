@@ -72,7 +72,7 @@ def signup():
         return jsonify({"message": "Missing required fields"}), 400
     
     # Check if role is valid
-    if data['role'] not in ['buyer', 'NGO', 'auditor']:
+    if data['role'] not in ['buyer', 'NGO']:
         return jsonify({"message": "Invalid role"}), 400
     
     conn = sqlite3.connect(DB_PATH)

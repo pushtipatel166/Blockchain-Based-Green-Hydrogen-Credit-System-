@@ -4,6 +4,7 @@ import CreateCreditForm from './CreateCreditForm';
 import MyCreditsList from './MyCreditsList';
 import RecentTransactionsList from './RecentTransactionsList';
 import VerificationForm from '../VerificationForm';
+import AutoCreditsList from './AutoCreditsList';
 
 const NGODashboard = () => {
   const [myCredits, setMyCredits] = useState([]);
@@ -43,7 +44,7 @@ const NGODashboard = () => {
           {/* Tab Navigation */}
           <div className="border-b border-gray-100">
             <nav className="flex space-x-1 px-6" aria-label="Tabs">
-              {['verification', 'create', 'credits', 'transactions'].map((tab) => (
+              {['verification', 'create', 'credits', 'auto-credits', 'transactions'].map((tab) => (
                 <button
                   key={tab}
                   onClick={() => setActiveTab(tab)}
@@ -53,7 +54,10 @@ const NGODashboard = () => {
                       : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-200'
                   } capitalize py-4 px-6 text-sm font-medium border-b-2 transition-colors duration-200`}
                 >
-                  {tab === 'verification' ? '🧠 ML Verification' : tab === 'create' ? 'Create Credit' : tab === 'credits' ? 'My Credits' : 'Transactions'}
+                  {tab === 'verification' ? '🧠 ML Verification' : 
+                   tab === 'create' ? 'Create Credit' : 
+                   tab === 'credits' ? 'My Credits' : 
+                   tab === 'auto-credits' ? '🚀 Auto-Credits' : 'Transactions'}
                 </button>
               ))}
             </nav>
@@ -74,6 +78,11 @@ const NGODashboard = () => {
             {activeTab === 'credits' && (
               <div className="animate-fade-in">
                 <MyCreditsList credits={myCredits} setCredits={setMyCredits} isLoading={isLoading} />
+              </div>
+            )}
+            {activeTab === 'auto-credits' && (
+              <div className="animate-fade-in">
+                <AutoCreditsList />
               </div>
             )}
             {activeTab === 'transactions' && (

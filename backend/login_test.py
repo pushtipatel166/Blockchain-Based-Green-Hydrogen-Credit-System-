@@ -31,8 +31,8 @@ def create_test_db():
     ''')
     
     # Delete any existing test users
-    cursor.execute('DELETE FROM users WHERE username IN (?, ?, ?)', 
-                  ('test_buyer', 'test_ngo', 'test_auditor'))
+    cursor.execute('DELETE FROM users WHERE username IN (?, ?)', 
+                  ('test_buyer', 'test_ngo'))
     
     # Create test password
     password = 'sepolia'
@@ -43,7 +43,7 @@ def create_test_db():
     test_users = [
         (str(uuid.uuid4()), 'test_buyer', password_hash, 'buyer'),
         (str(uuid.uuid4()), 'test_ngo', password_hash, 'NGO'),
-        (str(uuid.uuid4()), 'test_auditor', password_hash, 'auditor')
+
     ]
     
     cursor.executemany('INSERT INTO users VALUES (?, ?, ?, ?)', test_users)

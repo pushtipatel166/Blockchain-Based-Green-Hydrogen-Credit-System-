@@ -1,6 +1,6 @@
 from app import db
 from app.models.user import User
-# from app.models.association import AuditorAssociation
+
 
 class Credit(db.Model):
     __tablename__ = 'credits'
@@ -12,6 +12,6 @@ class Credit(db.Model):
     is_expired = db.Column(db.Boolean, default=False)
     creator_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     docu_url = db.Column(db.String(200))
-    auditors = db.Column(db.String(500))  # Store as JSON string for SQLite compatibility
+
     req_status = db.Column(db.Integer, nullable=False)
     creator = db.relationship('User', backref='credits')

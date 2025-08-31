@@ -165,7 +165,7 @@ const PaymentGateway = ({ onClose, onSuccess }) => {
               </div>
             </div>
 
-            <div className="mb-6 p-4 bg-gray-50 rounded-lg">
+                            <div className="mb-6 p-4 bg-green-50 rounded-lg">
               <div className="flex justify-between text-sm">
                 <span className="text-gray-600">Amount:</span>
                 <span className="font-medium">${amount || '0.00'}</span>

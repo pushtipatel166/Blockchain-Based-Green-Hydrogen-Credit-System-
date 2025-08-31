@@ -154,10 +154,10 @@ export const CCProvider = ({ children }) => {
                 price: credit.price,
                 forSale: credit.forSale,
                 requestStatus: credit.requestStatus,
-                numOfAuditors: credit.numOfAuditors,
+        
                 auditFees: credit.auditFees,
                 auditScore: credit.auditScore,
-                auditorsList: credit.auditorsList
+        
             };
         } catch (error) {
             console.error('Error getting credit details:', error);
@@ -230,19 +230,7 @@ export const CCProvider = ({ children }) => {
         }
     }
 
-    const getAuditorList = async (creditId) => {
-        try {
-            const web3Modal = new Web3Modal();
-            const connection = await web3Modal.connect();
-            const provider = new ethers.BrowserProvider(connection);
-            const contract = fetchContract(provider);
-            const auditorsList = await contract.getAuditorList(creditId);
-            return auditorsList;
-        } catch (error) {
-            console.error('Error getting auditors:', error);
-            throw error;
-        }
-    }
+
 
     const getContractBalance = async () => {
         try {
@@ -363,7 +351,7 @@ export const CCProvider = ({ children }) => {
                 getPrice,
                 requestAudit,
                 auditCredit,
-                getAuditorList,
+        
                 getContractBalance,
                 getWalletBalance,
                 error,

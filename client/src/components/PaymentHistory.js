@@ -74,7 +74,7 @@ const PaymentHistory = () => {
       {payments.map((payment, index) => (
         <div
           key={index}
-          className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-100"
+                          className="flex items-center justify-between p-4 bg-green-50 rounded-lg border border-green-100"
         >
           <div className="flex items-center space-x-3">
             <div className="p-2 bg-green-100 rounded-lg text-green-600">

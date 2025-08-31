@@ -18,8 +18,8 @@ Start-Sleep -Seconds 5
 Write-Host "✅ System Starting..." -ForegroundColor Green
 Write-Host "🌐 Frontend URL: http://localhost:3000" -ForegroundColor Cyan
 Write-Host "🔧 Backend URL: http://localhost:5000" -ForegroundColor Cyan
-Write-Host "🧠 ML Verification: http://localhost:3000/ngo-dashboard" -ForegroundColor Cyan
-Write-Host "👨‍💼 Auditor Dashboard: http://localhost:3000/auditor-dashboard" -ForegroundColor Cyan
+Write-Host "🧠 ML Verification: image.pngimage.pnghttp://localhost:3000/ngo-dashboard" -ForegroundColor Cyan
+
 Write-Host "🛒 Buyer Dashboard: http://localhost:3000/buyer-dashboard" -ForegroundColor Cyan
 
 Write-Host "🎯 Your AI-Powered Green Hydrogen Credit System is ready!" -ForegroundColor Green

@@ -5,6 +5,7 @@ from app.models.credit import Credit
 from app.models.request import Request
 from app.models.transaction import PurchasedCredit, Transactions
 from app.models.user import User
+from app.models.verification import VerificationRequest
 from app.utilis.redis import get_redis
 import random
 import json
@@ -17,8 +18,7 @@ def get_current_user():
     except json.JSONDecodeError:
         return None
 
-def numberOfAuditors(k) -> int:
-    return int((k//500)*2 + 3)
+
 
 @NGO_bp.route('/api/NGO/credits', methods=['GET', 'POST'])
 @jwt_required()
@@ -48,6 +48,9 @@ def manage_credits():
         data = []
         for c in credits:
             req = Request.query.filter_by(credit_id=c.id).first()
+            # Generate token ID for auto-generated credits
+            token_id = f"TOKEN_{c.id}" if c.is_verified else None
+            
             data.append({
                 "id": c.id,
                 "name": c.name,
@@ -58,9 +61,11 @@ def manage_credits():
                 "creator_id": c.creator_id,
                 "secure_url": c.docu_url,
                 "req_status": c.req_status,
-                "auditors_count": len(c.auditors),
-                "auditor_left": len(req.auditors) if req and req.auditors else 0,
-                "score": req.score if req else 0
+                "score": req.score if req else 0,
+                "is_ml_verified": c.is_verified,
+                "token_id": token_id,
+                "verification_status": "ML-Approved" if c.is_verified else "Pending",
+                "auto_generated": c.is_verified and c.req_status == 2
             })
         if redis_client:
             try:
@@ -83,13 +88,7 @@ def manage_credits():
         #do something regarding the amount 
         data = request.json
 
-        auditors = User.query.filter_by(role = 'auditor').all()
-        auditor_ids = [auditor.id for auditor in auditors]
-        k = numberOfAuditors(int(data['amount']))
-        try:
-            selected_auditor_ids = random.sample(auditor_ids, k)
-        except ValueError:
-            return jsonify({"message": "Not enough auditors"}), 503
+
         
         new_credit = Credit(
             id=data['creditId'],
@@ -98,7 +97,7 @@ def manage_credits():
             price=data['price'], 
             creator_id=user.id,
             docu_url = data['secure_url'],
-            auditors = selected_auditor_ids,
+
             req_status = 1
         )
         db.session.add(new_credit)
@@ -106,7 +105,7 @@ def manage_credits():
         new_request = Request(
             credit_id=data['creditId'],
             creator_id=user.id,
-            auditors=selected_auditor_ids
+
         )
         db.session.add(new_request)
 
@@ -199,25 +198,46 @@ def check_expire_request():
         return jsonify({"message": "User verified succesfully! can proceed to expire credit"}), 200
     return jsonify({"message": "Invalid credentials"}), 401
 
-@NGO_bp.route('/api/NGO/audit-req', methods=['GET'])
+@NGO_bp.route('/api/NGO/auto-credits', methods=['GET'])
 @jwt_required()
-def check_audit_request():
-    auditors = User.query.filter_by(role = 'auditor').all()
-    num_auditors = len(auditors)
-    # print("auditors avail:",num_auditors)
+def get_auto_generated_credits():
+    """Get auto-generated credits from ML verification"""
+    current_user = get_current_user()
+    if current_user.get('role') != 'NGO':
+        return jsonify({"message": "Unauthorized"}), 403
 
-    hydrogen_amount = request.args.get('amount')
-    if not hydrogen_amount:
-        return jsonify({"message": "Missing 'amount' parameter"}), 400
-
-    try:
-        hydrogen_amount = int(hydrogen_amount)
-    except ValueError:
-        return jsonify({"message": "'amount' must be an integer"}), 400
+    user = User.query.filter_by(username=current_user.get('username')).first()
     
-    req_auditors = numberOfAuditors(int(hydrogen_amount))
-
-    if num_auditors < req_auditors:
-        return jsonify({"message": f"Not Enough Auditors for {hydrogen_amount} kg of hydrogen. Maybe split the credit !"}), 503
+    # Get auto-generated credits (ML verified)
+    auto_credits = Credit.query.filter_by(
+        creator_id=user.id,
+        is_verified=True,
+        req_status=2
+    ).order_by(Credit.created_at.desc()).all()
     
-    return jsonify({"message": f"Enough auditors for the credit"}), 200
+    auto_credits_data = []
+    for credit in auto_credits:
+        # Get verification details
+        verification = VerificationRequest.query.filter_by(credit_id=credit.id).first()
+        
+        auto_credits_data.append({
+            "id": credit.id,
+            "name": credit.name,
+            "amount": credit.amount,
+            "price": credit.price,
+            "token_id": f"TOKEN_{credit.id}",
+            "production_method": verification.production_method if verification else "Unknown",
+            "hydrogen_amount": verification.hydrogen_amount if verification else credit.amount,
+            "verification_date": credit.created_at.isoformat(),
+            "ml_score": 100,  # Perfect ML verification
+            "status": "ML-Approved & Token Generated",
+            "documents": "Government certificates auto-generated"
+        })
+    
+    return jsonify({
+        "auto_credits": auto_credits_data,
+        "total_auto_generated": len(auto_credits_data),
+        "message": f"Found {len(auto_credits_data)} auto-generated credits from ML verification"
+    })
+
+

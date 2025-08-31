@@ -86,7 +86,7 @@ const Profile = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center text-gray-600">Loading profile...</div>
+      <div className="min-h-screen flex items-center justify-center text-green-600">Loading profile...</div>
     );
   }
 
@@ -102,7 +102,7 @@ const Profile = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-green-50">
       <div className="max-w-6xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
         <div className="bg-white rounded-xl shadow-sm overflow-hidden">
           <div className="p-6 border-b border-gray-100">
@@ -185,13 +185,13 @@ const Profile = () => {
           <div className="p-6 border-t border-gray-100">
             <h4 className="text-sm font-medium text-gray-700 mb-3">{profile.role === 'buyer' ? 'Purchased Credits' : profile.role === 'NGO' ? 'My Created Credits' : 'Credits'}</h4>
             {loading ? (
-              <div className="text-sm text-gray-500">Loading credits...</div>
+              <div className="text-sm text-green-500">Loading credits...</div>
             ) : credits.length === 0 ? (
               <div className="text-sm text-gray-500">No credits yet.</div>
             ) : (
               <ul className="space-y-2">
                 {credits.map((c) => (
-                  <li key={c.id} className="flex justify-between items-center py-2 px-4 bg-gray-50 rounded-md">
+                  <li key={c.id} className="flex justify-between items-center py-2 px-4 bg-green-50 rounded-md">
                     <div className="flex items-center space-x-2">
                       <Tag className="w-4 h-4 text-emerald-500" />
                       <span className="text-sm text-gray-700">{c.name}</span>

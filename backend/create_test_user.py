@@ -18,12 +18,7 @@ with app.app_context():
             'password': '123456',
             'role': 'NGO'
         },
-        {
-            'username': 'test_auditor',
-            'email': 'auditor@test.com',
-            'password': '123456',
-            'role': 'auditor'
-        },
+
         {
             'username': 'admin',
             'email': 'admin@test.com',
@@ -62,10 +57,7 @@ with app.app_context():
     print("   Password: 123456")
     print("   Email: ngo@test.com")
     print()
-    print("🔍 AUDITOR:")
-    print("   Username: test_auditor")
-    print("   Password: 123456")
-    print("   Email: auditor@test.com")
+
     print()
     print("👨‍💼 ADMIN:")
     print("   Username: admin")

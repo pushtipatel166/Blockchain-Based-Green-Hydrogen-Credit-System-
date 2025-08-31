@@ -23,12 +23,7 @@ with app.app_context():
             'password': '123456',
             'role': 'NGO'
         },
-        {
-            'username': 'test_auditor',
-            'email': 'auditor@test.com',
-            'password': '123456',
-            'role': 'auditor'
-        }
+
     ]
     
     for user_data in test_users:
@@ -55,9 +50,7 @@ with app.app_context():
     print("   Username: test_ngo")
     print("   Password: 123456")
     print()
-    print("🔍 AUDITOR:")
-    print("   Username: test_auditor")
-    print("   Password: 123456")
+
     print("="*50)
 
 

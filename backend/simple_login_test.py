@@ -82,20 +82,7 @@ def init_db():
     )
     ''')
     
-    # Create audit requests table
-    cursor.execute('''
-    CREATE TABLE IF NOT EXISTS audit_requests (
-        id TEXT PRIMARY KEY,
-        credit_id TEXT NOT NULL,
-        auditor_id TEXT NOT NULL,
-        status TEXT DEFAULT 'pending', -- pending, approved, rejected
-        request_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        completion_date TIMESTAMP,
-        notes TEXT,
-        FOREIGN KEY (credit_id) REFERENCES credits (id),
-        FOREIGN KEY (auditor_id) REFERENCES users (id)
-    )
-    ''')
+
 
     # Create user_credits table for tracking ownership
     cursor.execute('''
@@ -148,18 +135,12 @@ def init_db():
             'password': password_hash,
             'role': 'NGO'
         },
-        {
-            'id': str(uuid.uuid4()),
-            'username': 'test_auditor',
-            'email': 'auditor@example.com',
-            'password': password_hash,
-            'role': 'auditor'
-        }
+
     ]
     
     # Delete existing test users to avoid login issues
-    cursor.execute('DELETE FROM users WHERE username IN (?, ?, ?)', 
-                  ('test_buyer', 'test_admin', 'test_auditor'))
+    cursor.execute('DELETE FROM users WHERE username IN (?, ?)', 
+                  ('test_buyer', 'test_admin'))
     
     # Insert test users
     for user in test_users:
@@ -253,7 +234,7 @@ def signup():
         return jsonify({"message": "Missing required fields"}), 400
     
     # Check if role is valid
-    if data['role'] not in ['buyer', 'NGO', 'auditor']:
+    if data['role'] not in ['buyer', 'NGO']:
         return jsonify({"message": "Invalid role"}), 400
     
     conn = sqlite3.connect(DB_PATH)
@@ -749,178 +730,7 @@ def get_ngo_transactions():
     
     return jsonify(transactions), 200
 
-# Auditor API Routes
 
-@app.route('/api/auditor/credits', methods=['GET'])
-@jwt_required()
-def get_assigned_credits():
-    """Get credits assigned to an auditor"""
-    current_user = json.loads(get_jwt_identity())
-    
-    if current_user.get('role') != 'auditor':
-        return jsonify({"message": "Unauthorized - Only auditors can access this endpoint"}), 403
-    
-    conn = sqlite3.connect(DB_PATH)
-    conn.row_factory = sqlite3.Row
-    cursor = conn.cursor()
-    
-    # Get auditor's ID
-    cursor.execute('SELECT id FROM users WHERE username = ?', (current_user['username'],))
-    auditor = cursor.fetchone()
-    
-    if not auditor:
-        conn.close()
-        return jsonify({"message": "User not found"}), 404
-    
-    # Get all credits to audit (not verified yet)
-    # In a real system, there would be an assignment process
-    cursor.execute('''
-    SELECT c.*, u.username as creator_name
-    FROM credits c
-    JOIN users u ON c.creator_id = u.id
-    WHERE c.is_verified = 0 AND c.is_expired = 0
-    ''')
-    
-    credits = []
-    for row in cursor.fetchall():
-        # Check if there's an existing audit request
-        cursor.execute(
-            '''SELECT * FROM audit_requests 
-               WHERE credit_id = ? AND auditor_id = ?''',
-            (row['id'], auditor['id'])
-        )
-        audit = cursor.fetchone()
-        
-        status = audit['status'] if audit else 'unassigned'
-        
-        credits.append({
-            "id": row['id'],
-            "name": row['name'],
-            "description": row['description'],
-            "amount": row['amount'],
-            "price": row['price'],
-            "creator": row['creator_id'],
-            "creator_name": row['creator_name'],
-            "is_active": bool(row['is_active']),
-            "status": status,
-            "created_at": row['created_at'],
-            "docu_url": row['docu_url']
-        })
-    
-    # If no credits found, create some test credits for demo purposes
-    if not credits:
-        # Find an NGO user
-        cursor.execute('SELECT id FROM users WHERE role = "NGO" LIMIT 1')
-        ngo = cursor.fetchone()
-        
-        if ngo:
-            # Create a test credit
-            credit_id = create_dummy_credit(ngo['id'], "Test Credit for Audit", 50, 0.2)
-            
-            # Fetch the created credit
-            cursor.execute('''
-            SELECT c.*, u.username as creator_name
-            FROM credits c
-            JOIN users u ON c.creator_id = u.id
-            WHERE c.id = ?
-            ''', (credit_id,))
-            
-            row = cursor.fetchone()
-            if row:
-                credits.append({
-                    "id": row['id'],
-                    "name": row['name'],
-                    "description": row['description'],
-                    "amount": row['amount'],
-                    "price": row['price'],
-                    "creator": row['creator_id'],
-                    "creator_name": row['creator_name'],
-                    "is_active": bool(row['is_active']),
-                    "status": 'unassigned',
-                    "created_at": row['created_at'],
-                    "docu_url": row['docu_url']
-                })
-    
-    conn.close()
-    
-    return jsonify(credits), 200
-
-@app.route('/api/auditor/audit/<credit_id>', methods=['PATCH'])
-@jwt_required()
-def audit_credit(credit_id):
-    """Audit a credit"""
-    current_user = json.loads(get_jwt_identity())
-    
-    if current_user.get('role') != 'auditor':
-        return jsonify({"message": "Unauthorized - Only auditors can audit credits"}), 403
-    
-    data = request.json
-    if not data or 'action' not in data:
-        return jsonify({"message": "Missing required fields"}), 400
-    
-    if data['action'] not in ['approve', 'reject']:
-        return jsonify({"message": "Invalid action"}), 400
-    
-    conn = sqlite3.connect(DB_PATH)
-    conn.row_factory = sqlite3.Row
-    cursor = conn.cursor()
-    
-    # Get auditor's ID
-    cursor.execute('SELECT id FROM users WHERE username = ?', (current_user['username'],))
-    auditor = cursor.fetchone()
-    
-    if not auditor:
-        conn.close()
-        return jsonify({"message": "User not found"}), 404
-    
-    # Check if credit exists
-    cursor.execute('SELECT * FROM credits WHERE id = ?', (credit_id,))
-    credit = cursor.fetchone()
-    
-    if not credit:
-        conn.close()
-        return jsonify({"message": "Credit not found"}), 404
-    
-    # Create or update audit request
-    cursor.execute(
-        'SELECT * FROM audit_requests WHERE credit_id = ? AND auditor_id = ?',
-        (credit_id, auditor['id'])
-    )
-    existing_audit = cursor.fetchone()
-    
-    if existing_audit:
-        cursor.execute(
-            '''UPDATE audit_requests 
-               SET status = ?, completion_date = CURRENT_TIMESTAMP, notes = ? 
-               WHERE id = ?''',
-            ('approved' if data['action'] == 'approve' else 'rejected', 
-             data.get('notes', ''), existing_audit['id'])
-        )
-    else:
-        audit_id = str(uuid.uuid4())
-        cursor.execute(
-            '''INSERT INTO audit_requests 
-               (id, credit_id, auditor_id, status, completion_date, notes) 
-               VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP, ?)''',
-            (audit_id, credit_id, auditor['id'], 
-             'approved' if data['action'] == 'approve' else 'rejected', 
-             data.get('notes', ''))
-        )
-    
-    # Update credit verification status if approved
-    if data['action'] == 'approve':
-        cursor.execute(
-            'UPDATE credits SET is_verified = 1 WHERE id = ?',
-            (credit_id,)
-        )
-    
-    conn.commit()
-    conn.close()
-    
-    return jsonify({
-        "message": f"Credit {data['action']}d successfully",
-        "credit_id": credit_id
-    }), 200
 
 # Certificate API
 
