@@ -1,19 +1,19 @@
-# Blockchain based Carbon Credits
+# Blockchain based Hydrogen Credits
 
-A carbon credit trading platform leveraging React, Flask, and Solidity to promote transparency and accountability in CSR activities which are main disadvantages of traditional carbon trading. <br>
+A Hydrogen credit trading platform leveraging React, Flask, and Solidity to promote transparency and accountability in CSR activities which are main disadvantages of traditional Hydrogen trading. <br>
 
 **New Features:**
 - Updated smart contract deployment process with automated scripts
 - Improved blockchain integration with better error handling
 - Added comprehensive setup documentation
 
-**Idea:** Allow companies and corporations to reduce thier *net carbon* emissions by financially helping NGO that help reduce carbon emissions by buying smart contract based *Carbon Tokens* from them.
-- Reduce problems like double spending, ambiguous credit generation, curruption that plague the traditional carbon credits system
+**Idea:** Allow companies and corporations to reduce thier *net Hydrogen* emissions by financially helping NGO that help reduce Hydrogen emissions by buying smart contract based *Hydrogen Tokens* from them.
+- Reduce problems like double spending, ambiguous credit generation, curruption that plague the traditional Hydrogen credits system
 - Implemented a royality system which ensure that 10% of every transaction is given back to NGOs to unsure continues
-- A web app that simulates a blockchain carbon marketplace deployed on sepolia
+- A web app that simulates a blockchain Hydrogen marketplace deployed on sepolia
   
 ## Deployment
-The test web app deplyed [here](https://carbon-credit-sepolia.vercel.app/) <br>
+The test web app deplyed [here](https://Hydrogen-credit-sepolia.vercel.app/) <br>
 The contract deployed at address `0x5E5D1D1Dc0EDDB4f9e9E05FD872642Cd78F6eF51` on Sepolia view it on [EtherScan](https://sepolia.etherscan.io/address/0x5E5D1D1Dc0EDDB4f9e9E05FD872642Cd78F6eF51)
 
 To get started use test credentials:
@@ -27,37 +27,30 @@ Or ssee the demo [here](#demo).
 In India under section 135 of the Companies Act (2013), corporations must spend 2% of their average net profit from the preceding three years on Corporate Social Responsibility (CSR). 
 However, many companies resort to "greenwashing" rather than making genuine societal contributions. Simultaneously, NGOs face inadequate funding, limiting their ability to execute impactful projects.
 <br><br>
-A decentralized Carbon Credit system leveraging blockchain can address these challenges. 
+A decentralized Hydrogen Credit system leveraging blockchain can address these challenges. 
 It ensures timely funding for NGOs, promotes transparency and accountability in CSR activities, and aligns corporate efforts with genuine societal and environmental betterment.
 
 ### History
-Carbon trading originated in the 1990s as a market-based solution to combat climate change, starting with the Kyoto Protocol in 1997, which introduced emissions trading among countries.
-It later evolved into voluntary markets and cap-and-trade systems, allowing companies to trade carbon credits globally.
+Hydrogen trading originated in the 1990s as a market-based solution to combat climate change, starting with the Kyoto Protocol in 1997, which introduced emissions trading among countries.
+It later evolved into voluntary markets and cap-and-trade systems, allowing companies to trade Hydrogen credits globally.
 
 ## Workflow
-1. NGOs will register on the platform and create Carbon Credits based on thier projects which will then be put up for sale.
+1. NGOs will register on the platform and create Hydrogen Credits based on thier projects which will then be put up for sale.
 
 2. Companies or traders can buy these can buy these credits from the NGO and resell them further if they wish to.
-   - For every resell of a carbon credit, 10% of the transaction value is returned to the original creator of the credit (NGO).
+   - For every resell of a Hydrogen credit, 10% of the transaction value is returned to the original creator of the credit (NGO).
    - This mechanism ensures continuous funding support for the NGO's environmental projects.
 
 3. Credits must be available for finite amount of time to prevent double spending, once the project is completed the credits will be expired and can’t be sold further.
 
 4. Once the NGO completes the promised project, it can expire all credits associated with that project.
    - Once the NGO completes the promised project, it can expire all credits associated with that project.
-   - The web app generates a certificate verifying the credit purchase and acknowledging the person’s contribution to offsetting specific amount of carbon.
+   - The web app generates a certificate verifying the credit purchase and acknowledging the person’s contribution to offsetting specific amount of Hydrogen.
 
-### Workflow Diagram:
-![Flow diagram](https://github.com/user-attachments/assets/150eb965-a285-4da7-a434-14eb18890f79)
+
 <br>
 ### Sequence Diagram:
 ![Sequence diagram (1)](https://github.com/user-attachments/assets/43ac8bd4-a24c-4416-a607-5263a31e3cf2)
-
-
-## Demo
-
-
-https://github.com/user-attachments/assets/005bb354-3b01-4fb7-8a1e-faca3fd4ae2f
 
 
 
@@ -211,21 +204,21 @@ Go to client folder
 
 ## 🎯 HACKATHON WINNING FEATURES
 
-### ✨ **REVOLUTIONARY GREEN HYDROGEN CREDIT PLATFORM** - The Most Advanced H₂ Credit Trading System Ever Built!
+### ✨ **REVOLUTIONARY GREEN HYDROGEN CREDIT PLATFORM** - The Most Advanced H⁺ Credit Trading System Ever Built!
 
 Our platform is not just a trading system - it's a **POWERHOUSE** of cutting-edge AI and blockchain technology that will blow away the competition! Here's what makes us the **1%**:
 
 ## 🧠 **AI-POWERED DEEP LEARNING VERIFICATION SYSTEM**
 
-### **TensorFlow Neural Network for H₂ Validation**
+### **TensorFlow Neural Network for H⁺ Validation**
 - **Advanced ML Model**: 5-layer deep neural network with dropout regularization
-- **Real-time Verification**: Instant validation of energy-to-H₂ conversion efficiency
+- **Real-time Verification**: Instant validation of energy-to-H⁺ conversion efficiency
 - **Fraud Detection**: AI-powered fraud probability scoring (0-100%)
-- **Scientific Accuracy**: Based on industry standards (45-60 kWh/kg H₂)
+- **Scientific Accuracy**: Based on industry standards (45-60 kWh/kg H⁺)
 - **Confidence Scoring**: ML confidence levels for verification decisions
 
 ### **Complete Verification Workflow**
-1. **Industry Submission**: Upload energy production and H₂ production data
+1. **Industry Submission**: Upload energy production and H⁺ production data
 2. **ML Validation**: TensorFlow model validates scientific feasibility
 3. **Document Generation**: Auto-generate government certificates
 4. **Auditor Review**: AI-assisted verification with ML insights
@@ -233,52 +226,52 @@ Our platform is not just a trading system - it's a **POWERHOUSE** of cutting-edg
 
 ## 🚀 **CORE FEATURES**
 
-### 🧠 **AI-Powered H₂ Verification**
+### 🧠 **AI-Powered H⁺ Verification**
 - **TensorFlow Deep Learning Model** for scientific validation
-- **Real-time Efficiency Analysis** (45-60 kWh/kg H₂ range)
+- **Real-time Efficiency Analysis** (45-60 kWh/kg H⁺ range)
 - **Fraud Detection Algorithm** with confidence scoring
 - **Auto-generated Government Documents** for compliance
 - **ML-Assisted Auditor Dashboard** with AI insights
 
 ### 📊 **Real-Time Portfolio Analytics**
 - **Live Portfolio Value Tracking** with profit/loss calculations
-- **Green Hydrogen Impact Calculator** showing kg of H₂ produced
+- **Green Hydrogen Impact Calculator** showing kg of H⁺ produced
 - **Performance Metrics** with percentage gains/losses
 - **Investment ROI** tracking in real-time
 - **Portfolio Export** functionality for reporting
 
 ### 🎯 **AI-Powered Recommendations Engine**
-- **Smart H₂ Credit Matching** based on user preferences
+- **Smart H⁺ Credit Matching** based on user preferences
 - **Market Trend Analysis** for optimal investment timing
 - **Personalized Suggestions** with match percentage scores
-- **Trending H₂ Credits** identification
+- **Trending H⁺ Credits** identification
 - **Best Value Picks** algorithm
 
 ### 🔍 **Advanced Search & Filtering**
-- **Real-time Search** across H₂ credit names and creators
-- **Multi-criteria Filtering** by H₂ production type, price, performance
+- **Real-time Search** across H⁺ credit names and creators
+- **Multi-criteria Filtering** by H⁺ production type, price, performance
 - **Smart Sorting** by date, name, price, performance
 - **Grid/List View Toggle** for different user preferences
 - **Bulk Actions** for portfolio management
 
 ### 📈 **Market Intelligence Dashboard**
-- **Live H₂ Market Trends** with percentage changes
-- **Volume Analysis** for each H₂ production category
+- **Live H⁺ Market Trends** with percentage changes
+- **Volume Analysis** for each H⁺ production category
 - **Price Movement Tracking** with visual indicators
 - **Market Sentiment** analysis
 - **Trading Volume** insights
 
 ### 🔔 **Smart Notifications System**
 - **Real-time Alerts** for portfolio changes
-- **Expiry Warnings** for H₂ credits
+- **Expiry Warnings** for H⁺ credits
 - **Market Opportunity** notifications
 - **Success Confirmations** for transactions
 - **Customizable Alert** preferences
 
 ### 💎 **Social Features**
-- **Favorite H₂ Credits** system with heart icons
+- **Favorite H⁺ Credits** system with heart icons
 - **Creator Following** functionality
-- **H₂ Credit Ratings & Reviews** system
+- **H⁺ Credit Ratings & Reviews** system
 - **Social Sharing** of portfolio achievements
 - **Community Engagement** features
 
@@ -383,7 +376,7 @@ This is not just a hackathon project - it's a **revolutionary AI-powered platfor
 
 ### **AI/ML Stack**
 - **Neural Network**: 5-layer deep learning model
-- **Feature Engineering**: Energy-to-H₂ efficiency analysis
+- **Feature Engineering**: Energy-to-H⁺ efficiency analysis
 - **Model Training**: 10,000+ synthetic data points
 - **Real-time Inference**: Instant verification results
 - **Confidence Scoring**: ML-based decision support
